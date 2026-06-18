@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environments and secrets
+.env
+.venv/
+env/
+venv/
+
+# Local data and generated artifacts
+data/raw/
+data/interim/
+data/processed/
+outputs/
+runs/
+checkpoints/
+models/
+*.pt
+*.pth
+*.ckpt
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
