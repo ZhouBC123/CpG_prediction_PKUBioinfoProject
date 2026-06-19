@@ -27,10 +27,10 @@
 - [x] Implement HMM baseline for base-level segmentation.
 - [x] Implement fully connected neural network.
 - [x] Implement CNN.
-- [ ] Add metrics and training scripts/notebooks.
+- [x] Add metrics and training scripts/notebooks.
 
 ## 4. Report
 
 - [ ] Describe input/output data and acquisition method.
 - [ ] Summarize implementation and running instructions.
-- [ ] Report experiments, tuning, and results.
+- [x] Report experiments, tuning, and results.
