@@ -1,0 +1,145 @@
+{
+  "raw_dir": "/root/autodl-tmp/bioinfo_data/raw/ucsc_hg38",
+  "output_dir": "processed_data",
+  "window_size": 1024,
+  "negative_ratio": 1.0,
+  "max_n_fraction": 0.1,
+  "seed": 20260619,
+  "encoding": {
+    "A": 0,
+    "C": 1,
+    "G": 2,
+    "T": 3,
+    "N/other": 4
+  },
+  "splits": {
+    "train": [
+      "chr1",
+      "chr2",
+      "chr3",
+      "chr4",
+      "chr5",
+      "chr6",
+      "chr7",
+      "chr12",
+      "chr13",
+      "chr14",
+      "chr15",
+      "chr16",
+      "chr17",
+      "chr18",
+      "chr19",
+      "chr20",
+      "chr21",
+      "chr22",
+      "chrX",
+      "chrY"
+    ],
+    "val": [
+      "chr8",
+      "chr9"
+    ],
+    "test": [
+      "chr10",
+      "chr11"
+    ]
+  },
+  "source_files": {
+    "cpg_islands": "/root/autodl-tmp/bioinfo_data/raw/ucsc_hg38/cpgIslandExt.txt.gz",
+    "fasta": "/root/autodl-tmp/bioinfo_data/raw/ucsc_hg38/hg38.fa.gz",
+    "chrom_sizes": "/root/autodl-tmp/bioinfo_data/raw/ucsc_hg38/hg38.chrom.sizes"
+  },
+  "tasks": {
+    "binary": {
+      "train": {
+        "samples": 46258,
+        "x_shape": [
+          46258,
+          1024
+        ],
+        "y_shape": [
+          46258
+        ],
+        "positive_samples": 23129,
+        "positive_bases": null,
+        "file": "processed_data/binary/train.npz",
+        "index_file": "processed_data/binary/train_index.tsv"
+      },
+      "val": {
+        "samples": 4554,
+        "x_shape": [
+          4554,
+          1024
+        ],
+        "y_shape": [
+          4554
+        ],
+        "positive_samples": 2277,
+        "positive_bases": null,
+        "file": "processed_data/binary/val.npz",
+        "index_file": "processed_data/binary/val_index.tsv"
+      },
+      "test": {
+        "samples": 5072,
+        "x_shape": [
+          5072,
+          1024
+        ],
+        "y_shape": [
+          5072
+        ],
+        "positive_samples": 2536,
+        "positive_bases": null,
+        "file": "processed_data/binary/test.npz",
+        "index_file": "processed_data/binary/test_index.tsv"
+      }
+    },
+    "segmentation": {
+      "train": {
+        "samples": 46258,
+        "x_shape": [
+          46258,
+          1024
+        ],
+        "y_shape": [
+          46258,
+          1024
+        ],
+        "positive_samples": null,
+        "positive_bases": 14343288,
+        "file": "processed_data/segmentation/train.npz",
+        "index_file": "processed_data/segmentation/train_index.tsv"
+      },
+      "val": {
+        "samples": 4554,
+        "x_shape": [
+          4554,
+          1024
+        ],
+        "y_shape": [
+          4554,
+          1024
+        ],
+        "positive_samples": null,
+        "positive_bases": 1440677,
+        "file": "processed_data/segmentation/val.npz",
+        "index_file": "processed_data/segmentation/val_index.tsv"
+      },
+      "test": {
+        "samples": 5072,
+        "x_shape": [
+          5072,
+          1024
+        ],
+        "y_shape": [
+          5072,
+          1024
+        ],
+        "positive_samples": null,
+        "positive_bases": 1615758,
+        "file": "processed_data/segmentation/test.npz",
+        "index_file": "processed_data/segmentation/test_index.tsv"
+      }
+    }
+  }
+}

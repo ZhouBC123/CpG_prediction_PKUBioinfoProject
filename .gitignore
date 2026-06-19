@@ -1,36 +1,48 @@
-# Python
+# Python caches and build products
 __pycache__/
 *.py[cod]
 *.so
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+build/
+dist/
+*.egg-info/
 
 # Jupyter
 .ipynb_checkpoints/
 
-# Environments and secrets
+# Local environments and secrets
 .env
 .venv/
 env/
 venv/
 
-# Local data and generated artifacts
+# Data policy
+# processed_data/ is intentionally tracked because it is compact (~40 MB)
+# and lets reviewers run model smoke tests without rebuilding hg38 windows.
 data/raw/
 data/interim/
 data/processed/
+raw_data/
+intermediate_data/
+
+# Training outputs and generated artifacts
 outputs/
 runs/
 checkpoints/
 models/
+reports/figures/
 *.pt
 *.pth
 *.ckpt
+*.onnx
 
 # Logs and temporary files
 *.log
 *.tmp
 *.temp
+tmp/
 
 # OS/editor
 .DS_Store

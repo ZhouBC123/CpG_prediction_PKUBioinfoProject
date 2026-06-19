@@ -47,3 +47,23 @@ bash scripts/download_ucsc_hg38_cpg.sh
 ```
 
 See [docs/data_sources.md](docs/data_sources.md) for source URLs and file usage.
+
+## Preprocessing
+
+Build binary-classification and base-level segmentation datasets:
+
+```bash
+conda run -n cpg-prediction python scripts/preprocess_ucsc_cpg.py
+```
+
+Processed files are written to `processed_data/` and are intentionally ignored by git. See [docs/preprocessing.md](docs/preprocessing.md).
+
+## Model Smoke Test
+
+Verify all implemented model families on a small training subset:
+
+```bash
+/root/miniconda3/envs/cpg-prediction/bin/python scripts/verify_models_small_subset.py
+```
+
+See [docs/models.md](docs/models.md).

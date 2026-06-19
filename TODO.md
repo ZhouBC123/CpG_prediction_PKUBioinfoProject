@@ -16,17 +16,17 @@
 
 ## 2. Preprocessing
 
-- [ ] Parse UCSC `cpgIslandExt` table.
-- [ ] Build binary-classification windows.
-- [ ] Build base-level segmentation labels.
-- [ ] Split train/validation/test by chromosome to reduce leakage.
+- [x] Parse UCSC `cpgIslandExt` table.
+- [x] Build binary-classification windows.
+- [x] Build base-level segmentation labels.
+- [x] Split train/validation/test by chromosome to reduce leakage.
 
 ## 3. Models
 
-- [ ] Implement Markov chain baseline for binary classification.
-- [ ] Implement HMM baseline for base-level segmentation.
-- [ ] Implement fully connected neural network.
-- [ ] Implement CNN.
+- [x] Implement Markov chain baseline for binary classification.
+- [x] Implement HMM baseline for base-level segmentation.
+- [x] Implement fully connected neural network.
+- [x] Implement CNN.
 - [ ] Add metrics and training scripts/notebooks.
 
 ## 4. Report
