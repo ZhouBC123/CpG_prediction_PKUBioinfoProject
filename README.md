@@ -88,4 +88,4 @@ Run the baseline and neural-network experiment suite:
 /root/miniconda3/envs/cpg-prediction/bin/python scripts/run_experiments.py
 ```
 
-The script fits full-data Markov and HMM baselines, trains neural-network candidates on deterministic smaller subsets for tuning, then retrains the best MLP/CNN candidate for each task on the full training split. It writes metrics to `results/metrics.json`, updates [docs/results.md](docs/results.md), and stores model checkpoints under ignored `models/`.
+The script fits full-data Markov and HMM baselines, trains neural-network candidates on deterministic smaller subsets for tuning, then retrains the best MLP/CNN/UNet candidate for each task on the full training split. It writes metrics to `results/metrics.json`, updates [docs/results.md](docs/results.md), and stores model checkpoints under ignored `models/`.

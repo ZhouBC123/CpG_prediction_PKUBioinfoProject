@@ -8,6 +8,7 @@ Implemented model families:
 - `SequenceMLPSegmenter`: fully connected base-level segmenter over one-hot encoded fixed windows.
 - `SequenceCNNClassifier`: 1D CNN binary classifier.
 - `SequenceCNNSegmenter`: fully convolutional 1D CNN segmenter.
+- `SequenceUNetSegmenter`: 1D U-Net segmenter with encoder/decoder skip connections for base-level labels.
 
 Run a small correctness verification:
 

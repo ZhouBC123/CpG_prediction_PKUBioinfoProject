@@ -23,6 +23,7 @@ from cpg_prediction.neural import (  # noqa: E402
     SequenceCNNSegmenter,
     SequenceMLPClassifier,
     SequenceMLPSegmenter,
+    SequenceUNetSegmenter,
 )
 from cpg_prediction.probabilistic import MarkovBinaryClassifier, SupervisedHMMCpGSegmenter  # noqa: E402
 from cpg_prediction.training import predict_logits, save_checkpoint, train_epoch  # noqa: E402
@@ -115,6 +116,38 @@ def make_neural_specs(binary_epochs: int, segmentation_epochs: int) -> list[dict
             "make_model": lambda: SequenceCNNSegmenter(channels=64),
             "config": {"channels": 64, "lr": 5e-4, "epochs": segmentation_epochs, "weight_decay": 1e-5},
         },
+        {
+            "family": "unet_segmentation",
+            "name": "unet_segmentation_b24_d3_lr1e-3",
+            "task": "segmentation",
+            "batch_size": 48,
+            "make_model": lambda: SequenceUNetSegmenter(base_channels=24, depth=3, dropout=0.05),
+            "config": {"base_channels": 24, "depth": 3, "dropout": 0.05, "lr": 1e-3, "epochs": segmentation_epochs, "weight_decay": 1e-5},
+        },
+        {
+            "family": "unet_segmentation",
+            "name": "unet_segmentation_b32_d3_lr5e-4_pw2",
+            "task": "segmentation",
+            "batch_size": 48,
+            "make_model": lambda: SequenceUNetSegmenter(base_channels=32, depth=3, dropout=0.05),
+            "config": {"base_channels": 32, "depth": 3, "dropout": 0.05, "lr": 5e-4, "epochs": segmentation_epochs, "weight_decay": 1e-5, "pos_weight": 2.0},
+        },
+        {
+            "family": "unet_segmentation",
+            "name": "unet_segmentation_b32_d4_lr5e-4_pw2",
+            "task": "segmentation",
+            "batch_size": 32,
+            "make_model": lambda: SequenceUNetSegmenter(base_channels=32, depth=4, dropout=0.1),
+            "config": {"base_channels": 32, "depth": 4, "dropout": 0.1, "lr": 5e-4, "epochs": segmentation_epochs, "weight_decay": 1e-5, "pos_weight": 2.0},
+        },
+        {
+            "family": "unet_segmentation",
+            "name": "unet_segmentation_b48_d3_lr5e-4_pw2",
+            "task": "segmentation",
+            "batch_size": 32,
+            "make_model": lambda: SequenceUNetSegmenter(base_channels=48, depth=3, dropout=0.1),
+            "config": {"base_channels": 48, "depth": 3, "dropout": 0.1, "lr": 5e-4, "epochs": segmentation_epochs, "weight_decay": 1e-5, "pos_weight": 2.0},
+        },
     ]
 
 
@@ -161,6 +194,33 @@ def make_task_loaders(arrays: dict[str, tuple[np.ndarray, np.ndarray]], batch_si
 
 def metric_key_for_task(task: str) -> str:
     return "f1" if task == "binary" else "base_f1"
+
+
+def threshold_metrics(task: str, y_true: np.ndarray, y_score: np.ndarray, threshold: float) -> dict[str, float | None]:
+    if task == "binary":
+        return binary_metrics(y_true, y_score, threshold=threshold)
+    return segmentation_metrics(y_true, y_score, threshold=threshold)
+
+
+def best_threshold_metrics(task: str, y_true: np.ndarray, y_score: np.ndarray) -> tuple[float, dict[str, float | None]]:
+    thresholds = np.linspace(0.1, 0.9, 17)
+    y_true_bool = np.asarray(y_true).astype(bool).ravel()
+    y_score_flat = np.asarray(y_score, dtype=np.float64).ravel()
+    best_threshold = 0.5
+    best_f1 = -1.0
+
+    for threshold in thresholds:
+        y_pred_bool = y_score_flat >= threshold
+        tp = int(np.logical_and(y_true_bool, y_pred_bool).sum())
+        fp = int(np.logical_and(~y_true_bool, y_pred_bool).sum())
+        fn = int(np.logical_and(y_true_bool, ~y_pred_bool).sum())
+        denominator = (2 * tp) + fp + fn
+        f1 = 0.0 if denominator == 0 else (2 * tp) / denominator
+        if f1 > best_f1:
+            best_f1 = f1
+            best_threshold = float(threshold)
+
+    return best_threshold, threshold_metrics(task, y_true, y_score, best_threshold)
 
 
 def evaluate_markov(
@@ -249,7 +309,11 @@ def train_neural_config(
     model_dir: Path,
 ) -> dict[str, Any]:
     model = model.to(device)
-    loss_fn = nn.BCEWithLogitsLoss()
+    pos_weight_value = config.get("pos_weight")
+    if pos_weight_value is None:
+        loss_fn = nn.BCEWithLogitsLoss()
+    else:
+        loss_fn = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([float(pos_weight_value)], device=device))
     optimizer = torch.optim.Adam(model.parameters(), lr=float(config["lr"]), weight_decay=float(config.get("weight_decay", 0.0)))
     epochs = int(config["epochs"])
     history = []
@@ -263,15 +327,13 @@ def train_neural_config(
         val_logits, val_y, val_loss = predict_logits(model, val_loader, device)
         val_score = sigmoid_numpy(val_logits)
         y_val_np = val_y.numpy()
-        if task == "binary":
-            metrics = binary_metrics(y_val_np, val_score)
-        else:
-            metrics = segmentation_metrics(y_val_np, val_score)
+        threshold, metrics = best_threshold_metrics(task, y_val_np, val_score)
         key = float(metrics[metric_key_for_task(task)])
-        history.append({"epoch": epoch, "train_loss": train_loss, "val_loss": val_loss, "val": metrics})
+        history.append({"epoch": epoch, "train_loss": train_loss, "val_loss": val_loss, "threshold": threshold, "val": metrics})
         if key > best_val_key:
             best_val_key = key
             best_epoch = epoch
+            best_threshold = threshold
             best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
 
     if best_state is not None:
@@ -279,10 +341,9 @@ def train_neural_config(
     test_logits, test_y, test_loss = predict_logits(model, test_loader, device)
     test_score = sigmoid_numpy(test_logits)
     test_y_np = test_y.numpy()
-    if task == "binary":
-        test_metrics = binary_metrics(test_y_np, test_score)
-    else:
-        test_metrics = segmentation_metrics(test_y_np, test_score)
+    best_history = history[best_epoch - 1]
+    best_threshold = float(best_history["threshold"])
+    test_metrics = threshold_metrics(task, test_y_np, test_score, best_threshold)
 
     checkpoint = model_dir / phase / f"{name}.pt"
     save_checkpoint(
@@ -296,6 +357,7 @@ def train_neural_config(
             "config": config,
             "train_samples": train_samples,
             "best_epoch": best_epoch,
+            "threshold": best_threshold,
         },
     )
     return {
@@ -306,6 +368,7 @@ def train_neural_config(
         "config": config,
         "train_samples": train_samples,
         "best_epoch": best_epoch,
+        "threshold": best_threshold,
         "history": history,
         "test_loss": test_loss,
         "test": test_metrics,
@@ -379,7 +442,7 @@ def selected_full_specs(
         spec["name"]: spec for spec in make_neural_specs(full_binary_epochs, full_segmentation_epochs)
     }
     selected = []
-    for family in ["mlp_binary", "cnn_binary", "mlp_segmentation", "cnn_segmentation"]:
+    for family in ["mlp_binary", "cnn_binary", "mlp_segmentation", "cnn_segmentation", "unet_segmentation"]:
         best = best_neural_by_family(tuning_results, family)
         selected.append(full_specs_by_name[best["name"]])
     return selected
@@ -440,7 +503,7 @@ def write_results_markdown(results: dict[str, Any], path: Path) -> None:
             "## Notes",
             "",
             "- Markov and HMM baselines are fit with Laplace smoothing grid search over alpha values.",
-            "- Neural candidates are first checked on deterministic smaller training subsets, then the best MLP/CNN candidate per task is retrained on the full training split.",
+            "- Neural candidates are first checked on deterministic smaller training subsets, then the best MLP/CNN/UNet candidate per task is retrained on the full training split.",
             "- Checkpoints are written under `models/` and intentionally ignored by git.",
             "",
         ]
@@ -534,6 +597,7 @@ def main() -> None:
         "cnn_binary": "CNN",
         "mlp_segmentation": "MLP",
         "cnn_segmentation": "CNN",
+        "unet_segmentation": "UNet",
     }
     tuning_by_family = {family: best_neural_by_family(neural_tuning, family) for family in labels}
     for family, label in labels.items():

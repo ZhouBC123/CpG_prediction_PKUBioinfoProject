@@ -20,6 +20,7 @@ from cpg_prediction.neural import (  # noqa: E402
     SequenceCNNSegmenter,
     SequenceMLPClassifier,
     SequenceMLPSegmenter,
+    SequenceUNetSegmenter,
 )
 from cpg_prediction.probabilistic import MarkovBinaryClassifier, SupervisedHMMCpGSegmenter  # noqa: E402
 from cpg_prediction.training import train_torch_smoke  # noqa: E402
@@ -99,6 +100,7 @@ def main() -> None:
         "cnn_binary": (SequenceCNNClassifier(), binary_loader),
         "mlp_segmentation": (SequenceMLPSegmenter(sequence_length=x_seg.shape[1]), seg_loader),
         "cnn_segmentation": (SequenceCNNSegmenter(), seg_loader),
+        "unet_segmentation": (SequenceUNetSegmenter(base_channels=16), seg_loader),
     }
 
     for name, (model, loader) in torch_models.items():
