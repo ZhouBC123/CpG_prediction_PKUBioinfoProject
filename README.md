@@ -34,7 +34,7 @@ python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
 
 ## Raw Data
 
-Raw data is stored outside the git repository:
+Raw UCSC downloads are stored outside the git repository because the hg38 FASTA is large:
 
 ```text
 /root/autodl-tmp/bioinfo_data/raw/ucsc_hg38
@@ -48,15 +48,27 @@ bash scripts/download_ucsc_hg38_cpg.sh
 
 See [docs/data_sources.md](docs/data_sources.md) for source URLs and file usage.
 
+## Processed Data
+
+Processed datasets are committed under `processed_data/` because the complete generated dataset is compact enough for git, about 40 MB. This lets model smoke tests and early experiments run immediately after cloning the repository.
+
+Tracked processed files include:
+
+- `processed_data/binary/{train,val,test}.npz`
+- `processed_data/segmentation/{train,val,test}.npz`
+- `processed_data/*/*_index.tsv`
+- `processed_data/manifest.json`
+- `processed_data/cpg_islands_standard.tsv`
+
 ## Preprocessing
 
-Build binary-classification and base-level segmentation datasets:
+Rebuild binary-classification and base-level segmentation datasets from the raw UCSC files:
 
 ```bash
 conda run -n cpg-prediction python scripts/preprocess_ucsc_cpg.py
 ```
 
-Processed files are written to `processed_data/` and are intentionally ignored by git. See [docs/preprocessing.md](docs/preprocessing.md).
+The command overwrites the tracked files in `processed_data/` with deterministic output. See [docs/preprocessing.md](docs/preprocessing.md).
 
 ## Model Smoke Test
 

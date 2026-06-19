@@ -15,4 +15,4 @@ Run a small correctness verification:
 /root/miniconda3/envs/cpg-prediction/bin/python scripts/verify_models_small_subset.py
 ```
 
-The verification uses a small training subset, checks probability/prediction shapes for the probabilistic models, and runs a few optimization steps for each neural model to verify forward pass, loss computation, backward pass, and parameter update.
+The verification uses the committed `processed_data/` snapshot by default. It takes a small training subset, checks probability/prediction shapes for the probabilistic models, and runs a few optimization steps for each neural model to verify forward pass, loss computation, backward pass, and parameter update.

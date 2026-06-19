@@ -1,5 +1,7 @@
 # Processed CpG Datasets
 
+This directory is intentionally tracked in git. It is about 40 MB and lets the model smoke tests run without downloading or preprocessing hg38.
+
 Encoding: A=0, C=1, G=2, T=3, N/other=4.
 
 - `binary/{train,val,test}.npz`: `X` has shape `(samples, 1024)`, `y` has shape `(samples,)`.
